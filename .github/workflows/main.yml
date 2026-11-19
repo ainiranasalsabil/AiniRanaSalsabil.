@@ -12,53 +12,35 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Mengambil source code dari repository
       - name: Checkout source
         uses: actions/checkout@v4
 
-      # 2. Mengatur Java 17
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
 
-      # 3. Memeriksa struktur project
-      - name: Check project structure
-        run: |
-          echo "Lokasi project:"
-          pwd
-          echo "Daftar file:"
-          ls -la
-          echo "Memeriksa settings.gradle:"
-          test -f settings.gradle
-
-      # 4. Mengatur Android SDK
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      # 5. Menginstal Android SDK yang dibutuhkan
       - name: Install Android SDK packages
         run: |
           yes | sdkmanager --licenses || true
           sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
-      # 6. Mengatur Gradle 8.7
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.7'
 
-      # 7. Build APK
       - name: Build APK
-        run: |
-          cd "$GITHUB_WORKSPACE"
-          gradle assembleDebug
+        working-directory: ./AiniRanaAndroid
+        run: gradle assembleDebug
 
-      # 8. Mengunggah APK hasil build
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: AiniRanaSalsabil-APK
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: AiniRanaAndroid/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
