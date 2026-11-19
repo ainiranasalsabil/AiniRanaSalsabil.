@@ -12,32 +12,56 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Mengambil source code repository
       - name: Checkout source
         uses: actions/checkout@v4
 
+      # 2. Mengatur Java 17
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+      # 3. Memastikan folder project benar
+      - name: Check Android project
+        working-directory: ./AiniRanaAndroid
+        run: |
+          echo "Memeriksa struktur project..."
+          ls -la
+          test -f settings.gradle
+          test -f build.gradle
+          test -d app
 
+      # 4. Mengatur Android SDK tanpa setup-android action
       - name: Install Android SDK packages
         run: |
-          yes | sdkmanager --licenses || true
-          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
 
+          if [ ! -f "$SDKMANAGER" ]; then
+            echo "sdkmanager tidak ditemukan!"
+            exit 1
+          fi
+
+          yes | "$SDKMANAGER" --licenses || true
+
+          "$SDKMANAGER" \
+            "platform-tools" \
+            "platforms;android-35" \
+            "build-tools;35.0.0"
+
+      # 5. Mengatur Gradle
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.7'
 
-      - name: Build APK
+      # 6. Membangun APK
+      - name: Build Android APK
         working-directory: ./AiniRanaAndroid
         run: gradle assembleDebug
 
+      # 7. Mengunggah APK
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
